@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แบบประเมิน IOC Genetics 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* layout: one reading column of item cards on screen; a separate A4 form is generated for printing */
+:root{
+  --paper:#f4f6f3; --card:#ffffff; --ink:#1d2b25; --muted:#5d6d66; --line:#d5ddd8;
+  --accent:#1f6f5c; --accent-soft:#e3f1ec; --plus:#1f7a4d; --zero:#8a6d1c; --minus:#b3402f;
+  --display:'IBM Plex Sans Thai','Sarabun',sans-serif; --body:'Sarabun','TH SarabunPSK','Leelawadee UI',sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+button,input,textarea{font:inherit;color:inherit}
+.wrap[hidden]{display:none}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 120px;display:flex;flex-direction:column;gap:16px}
+header.top h1{font-family:var(--display);font-size:clamp(22px,4vw,30px);line-height:1.3;margin:6px 0 2px;text-wrap:balance}
+header.top p{margin:0;color:var(--muted)}
+.tag{display:inline-block;font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:2px 10px;border-radius:999px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.panel h2{font-family:var(--display);font-size:19px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.grid label{display:flex;flex-direction:column;gap:4px;font-size:15px;color:var(--muted)}
+.grid input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;font-size:17px;color:var(--ink)}
+.grid input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.grid .req{color:var(--minus)}
+.how{margin:0;padding-left:20px}
+.how li{margin:2px 0}
+.scale{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:8px;font-size:15px}
+.scale span b{display:inline-block;min-width:30px;text-align:center;border-radius:6px;color:#fff;margin-right:6px;font-size:14px}
+.sec-h{font-family:var(--display);font-size:21px;margin:14px 0 0;text-wrap:balance}
+.sec-p{margin:0;color:var(--muted);font-size:15.5px}
+.dim{font-weight:700;color:var(--accent);margin:6px 2px -4px;font-size:16px}
+.item{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:8px 16px}
+.item.done{border-left-color:var(--accent)}
+.item.miss{border-left-color:var(--minus);background:#fff6f4}
+.item .no{font-weight:700;color:var(--muted);margin-right:6px}
+.item .concept{grid-column:1/-1;font-size:14.5px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:4px 10px}
+.item .q p{margin:0}
+.item .q ol{margin:2px 0 0;padding-left:24px}
+.item .q .lab{font-weight:600;margin-top:4px}
+.item .q .key{font-size:14px;color:var(--muted);font-style:italic;margin-top:4px}
+.rate{display:flex;gap:6px;align-self:start}
+.rate button{width:58px;height:46px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-weight:700;font-size:18px;cursor:pointer;font-variant-numeric:tabular-nums}
+.rate button:hover{border-color:var(--accent)}
+.rate button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rate button.on[data-v="1"]{background:var(--plus);border-color:var(--plus);color:#fff}
+.rate button.on[data-v="0"]{background:var(--zero);border-color:var(--zero);color:#fff}
+.rate button.on[data-v="-1"]{background:var(--minus);border-color:var(--minus);color:#fff}
+.item textarea{grid-column:1/-1;border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-height:40px;resize:vertical;font-size:15.5px;background:#fbfcfb}
+textarea.big{width:100%;min-height:96px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fbfcfb}
+.sigmode{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.sigmode button{display:flex;gap:12px;align-items:center;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;cursor:pointer}
+.sigmode button i{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);flex:none;position:relative}
+.sigmode button[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.sigmode button[aria-checked="true"] i{border-color:var(--accent)}
+.sigmode button[aria-checked="true"] i::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+.sigmode span{display:flex;flex-direction:column}
+.sigmode small{color:var(--muted);font-size:14px}
+.sigstep{margin-bottom:12px}
+.sigstep[hidden]{display:none}
+#pad{width:100%;max-width:520px;height:160px;border:1.5px dashed var(--accent);border-radius:10px;background:#fff;touch-action:none;display:block}
+.sigout .prev{max-width:520px;height:140px;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:15px;overflow:hidden}
+.sigout .prev img{max-width:92%;max-height:120px}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.sig canvas{width:100%;height:150px;border:1.5px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;display:block}
+.sig .prev{height:150px;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:15px;overflow:hidden}
+.sig .prev img{max-width:92%;max-height:130px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.ghost{color:var(--minus)}
+.note{font-size:14.5px;color:var(--muted)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));z-index:5}
+.bar .in{max-width:860px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.meter{flex:1;min-width:160px}
+.meter .t{font-size:14.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.meter .track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.meter .track i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.msg{font-size:15px;color:var(--minus)}
+.modal{position:fixed;inset:0;background:rgba(20,30,25,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}
+.modal[hidden]{display:none}
+.modal .box{background:#fff;border-radius:14px;max-width:440px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.ok{font-size:15px;color:var(--plus)}
+#tvBody{display:flex;flex-direction:column;gap:16px}
+body.teacher .bar{display:none}
+.tvt{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:15.5px}
+.tvt th,.tvt td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.tvt th{background:#eef2ef;font-weight:600}
+.tvt td.c,.tvt th.c{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tvt tr.part td{background:var(--accent-soft);font-weight:700;color:var(--accent)}
+.pill{display:inline-block;padding:1px 10px;border-radius:999px;font-size:13.5px;font-weight:600}
+.pill.pass{background:#e2f3e8;color:var(--plus)}.pill.fail{background:#fbe7e3;color:var(--minus)}
+.scroll{overflow-x:auto}
+.kp{display:flex;flex-wrap:wrap;gap:10px}
+.kp div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-width:140px}
+.kp b{display:block;font-size:24px;font-family:var(--display);font-variant-numeric:tabular-nums}
+.kp span{font-size:14px;color:var(--muted)}
+@media (max-width:640px){.grid,.sig,.sigmode{grid-template-columns:1fr}.item{grid-template-columns:1fr}.rate button{flex:1}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- printed form (A4) ---------- */
+#print{display:none}
+@page{size:A4;margin:18mm 16mm 16mm 22mm}
+@media print{
+  body{background:#fff;font-size:13.5pt;line-height:1.35;color:#000}
+  .wrap,.bar,.modal{display:none!important}
+  #print .sumt td,#print .sumt th{text-align:center}
+  #print .sumt td.l{text-align:left}
+  #print{display:block;font-family:'Sarabun','TH SarabunPSK',sans-serif}
+  #print h1{font-size:16pt;text-align:center;margin:0 0 2pt}
+  #print .c{text-align:center;margin:0}
+  #print h2{font-size:14pt;margin:12pt 0 4pt;break-after:avoid}
+  #print p{margin:0 0 2pt}
+  #print .info{display:grid;grid-template-columns:auto 1fr;gap:1pt 8pt;margin:6pt 0}
+  #print .info b{font-weight:600}
+  #print .info span{border-bottom:1px dotted #000}
+  #print table{width:100%;border-collapse:collapse;font-size:11.5pt;line-height:1.3}
+  #print th,#print td{border:1px solid #000;padding:2pt 4pt;vertical-align:top}
+  #print th{background:#e6e6e6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #print thead{display:table-header-group}
+  #print tr{break-inside:avoid}
+  #print td.n,#print th.n{text-align:center;width:22pt}
+  #print td.r{text-align:center;width:24pt;font-size:13pt;font-weight:700;vertical-align:middle}
+  #print td.cc{width:25%}
+  #print td.sg{width:20%}
+  #print tr.dim td{background:#f2f2f2;color:#000;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #print ol{margin:0;padding-left:16pt}
+  #print .k{font-style:italic;color:#444}
+  #print .pb{break-before:page}
+  #print .sigb{margin:18pt 0 0 52%;break-inside:avoid}
+  #print .sigb .img{height:48pt;display:flex;align-items:flex-end;justify-content:center}
+  #print .sigb img{max-height:48pt;max-width:180pt;mix-blend-mode:multiply}
+  #print .sigb p{text-align:center;margin:1pt 0}
+  #print .sugg{border:1px solid #000;min-height:40pt;padding:4pt 6pt;white-space:pre-wrap}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <header class="top">
+    <span class="tag">สำหรับผู้เชี่ยวชาญ · กรอกบนเว็บแล้วพิมพ์เป็น PDF</span>
+    <h1>แบบประเมินความสอดคล้อง (IOC) ของเครื่องมือเก็บข้อมูล</h1>
+    <p>นวัตกรรม Genetics 3D: แบบจำลองสามมิติ เรื่อง การจำลองดีเอ็นเอและการแสดงออกของยีน · รายวิชาชีววิทยา ชั้นมัธยมศึกษาปีที่ 4 โรงเรียนคลองหาดพิทยาคม</p>
+  </header>
+
+  <section class="panel" aria-labelledby="h-info">
+    <h2 id="h-info">ข้อมูลผู้เชี่ยวชาญ</h2>
+    <div class="grid">
+      <label for="fName">ชื่อ–สกุล (มีคำนำหน้า) <span class="req">*</span><input id="fName" autocomplete="name"></label>
+      <label for="fPos">ตำแหน่ง / วิทยฐานะ<input id="fPos" placeholder="เช่น ครู วิทยฐานะครูชำนาญการ"></label>
+      <label for="fEdu">วุฒิการศึกษา / สาขาวิชา<input id="fEdu" placeholder="เช่น วท.บ. ชีววิทยา"></label>
+      <label for="fWork">สถานที่ทำงาน<input id="fWork"></label>
+      <label for="fDate">วันที่ประเมิน<input id="fDate" type="date"></label>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-how">
+    <h2 id="h-how">คำชี้แจง</h2>
+    <ol class="how">
+      <li>ประเมินเครื่องมือ 3 ตอน รวม 38 ข้อ: ตอนที่ 1 แบบวัดมโนทัศน์ชุด A (10 ข้อ) · ตอนที่ 2 ชุด B (10 ข้อ) · ตอนที่ 3 แบบประเมินความพึงพอใจ (18 ข้อ)</li>
+      <li>พิจารณาว่าข้อคำถามสอดคล้องกับสิ่งที่ต้องการวัดหรือไม่ แล้วแตะคะแนน</li>
+      <li>เขียนข้อเสนอแนะในช่องใต้ข้อ หรือในช่องท้ายแบบประเมิน (ไม่บังคับ)</li>
+      <li>เซ็นชื่อ (วาดบนจอ หรืออัปโหลดรูปลายเซ็นสแกน) แล้วกด "พิมพ์ / บันทึกเป็น PDF" เลือกเครื่องพิมพ์เป็น "บันทึกเป็น PDF" แล้วส่งไฟล์ PDF กลับให้ครู</li>
+    </ol>
+    <div class="scale"><span><b style="background:var(--plus)">+1</b>แน่ใจว่าสอดคล้อง</span><span><b style="background:var(--zero)">0</b>ไม่แน่ใจ</span><span><b style="background:var(--minus)">−1</b>แน่ใจว่าไม่สอดคล้อง</span></div>
+    <p class="note" style="margin:8px 0 0">คำตอบบันทึกไว้ในเครื่องนี้อัตโนมัติ ปิดหน้าแล้วกลับมาทำต่อได้</p>
+  </section>
+
+  <div id="items"></div>
+
+  <section class="panel" aria-labelledby="h-sugg">
+    <h2 id="h-sugg">ข้อเสนอแนะเพิ่มเติม</h2>
+    <textarea class="big" id="fSugg" placeholder="ข้อเสนอแนะโดยรวม (ไม่บังคับ)"></textarea>
+  </section>
+
+  <section class="panel" aria-labelledby="h-sig">
+    <h2 id="h-sig">ลายเซ็นผู้เชี่ยวชาญ</h2>
+    <p class="note" style="margin:0 0 8px">ขั้นที่ 1 เลือกวิธีเซ็น <b>1 วิธี</b></p>
+    <div class="sigmode" id="sigMode" role="radiogroup" aria-label="วิธีเซ็น">
+      <button type="button" role="radio" aria-checked="false" data-m="draw"><i></i><span><b>เซ็นบนจอ</b><small>ใช้นิ้วหรือปากกาเซ็นในกรอบ</small></span></button>
+      <button type="button" role="radio" aria-checked="false" data-m="upload"><i></i><span><b>อัปโหลดรูปลายเซ็น</b><small>รูปถ่ายหรือสแกนลายเซ็นบนกระดาษขาว</small></span></button>
+    </div>
+    <div id="sigDraw" class="sigstep" hidden>
+      <p class="note" style="margin:0 0 6px">ขั้นที่ 2 เซ็นในกรอบ แล้วกด "ใช้ลายเซ็นนี้"</p>
+      <canvas id="pad" aria-label="พื้นที่เซ็นชื่อ"></canvas>
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="padUse">ใช้ลายเซ็นนี้</button><button class="btn ghost" id="padClear">ลบแล้วเซ็นใหม่</button></div>
+    </div>
+    <div id="sigUp" class="sigstep" hidden>
+      <p class="note" style="margin:0 0 6px">ขั้นที่ 2 เลือกรูปลายเซ็นจากเครื่อง</p>
+      <div class="row"><label class="btn primary" for="sigFile">เลือกรูปลายเซ็น</label><input type="file" id="sigFile" accept="image/*" hidden></div>
+    </div>
+    <div class="sigout">
+      <p class="note" style="margin:0 0 6px">ลายเซ็นที่จะใช้ใน PDF</p>
+      <div class="prev" id="sigPrev">ยังไม่มีลายเซ็น</div>
+      <div class="row" style="margin-top:8px"><button class="btn ghost" id="sigDel">เอาลายเซ็นออก</button></div>
+    </div>
+  </section>
+
+  <div class="row"><button class="btn ghost" id="reset">ล้างคำตอบทั้งหมด</button></div>
+</div>
+
+<div class="wrap" id="tv" hidden>
+  <header class="top"><span class="tag">สำหรับครู</span><h1>ผลรวมแบบประเมิน IOC</h1><p>คำตอบของผู้เชี่ยวชาญทุกคนที่กดส่ง เก็บไว้ใน Firebase · พิมพ์ฉบับของแต่ละคนใหม่ได้ตลอด</p></header>
+  <section class="panel" id="tvLogin">
+    <h2>เข้าสู่ระบบครู</h2>
+    <div class="row"><input type="password" id="tvPw" placeholder="รหัสผ่านครู" style="border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-width:220px"><button class="btn primary" id="tvGo">เข้าสู่ระบบ</button><button class="btn" id="tvBack">กลับไปหน้าแบบประเมิน</button></div>
+    <p class="msg" id="tvErr" style="margin:8px 0 0"></p>
+  </section>
+  <div id="tvBody"></div>
+</div>
+
+<div class="bar"><div class="in">
+  <div class="meter"><div class="t" id="mt">ประเมินแล้ว 0 / 38 ข้อ</div><div class="track"><i id="mi"></i></div></div>
+  <span class="msg" id="msg" aria-live="polite"></span><span class="ok" id="cloud"></span>
+  <button class="btn primary" id="go">พิมพ์ / บันทึกเป็น PDF</button>
+</div></div>
+
+<div class="modal" id="modal" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <strong id="mTitle"></strong><div id="mBody" class="note"></div>
+  <div class="row" style="justify-content:flex-end"><button class="btn" id="mNo">กลับไปแก้</button><button class="btn primary" id="mYes">พิมพ์ต่อ</button></div>
+</div></div>
+
+<div id="print"></div>
+
+<script>
+const DATA = {"A": [["DNA polymerase เติมนิวคลีโอไทด์ได้เฉพาะที่ปลาย 3′ สายใหม่จึงสร้างในทิศ 5′ → 3′", "DNA polymerase เติมนิวคลีโอไทด์ใหม่ที่ส่วนใดของสายที่กำลังสร้าง", ["ปลาย 5′", "ปลาย 3′", "ได้ทั้งสองปลาย"], ["เอนไซม์เคลื่อนที่ได้ทั้งสองทิศตามแม่แบบ", "ปลาย 5′ มีหมู่ฟอสเฟตให้พลังงาน", "เติมได้เฉพาะปลาย 3′ ของสายที่มีอยู่แล้ว สายใหม่จึงยาวในทิศ 5′→3′"], "ข", "3"], ["สายแลกกิงสร้างเป็นช่วงสั้น ๆ (ชิ้นส่วนโอคาซากิ) ในทิศ 5′ → 3′", "สายแลกกิง (lagging strand) ถูกสร้างอย่างไร", ["สร้างต่อเนื่องในทิศ 3′→5′", "สร้างต่อเนื่องหลังสายลีดดิงเสร็จ", "สร้างเป็นช่วง ๆ ในทิศ 5′→3′"], ["ทิศ 5′→3′ ของสายนี้ชี้ออกจาก fork จึงต้องเริ่มใหม่เป็นช่วงเมื่อแม่แบบเปิดเพิ่ม", "ต้องรอสายลีดดิงเสร็จก่อนจึงมีแม่แบบ", "มี DNA polymerase อีกชนิดที่สร้างในทิศ 3′→5′"], "ค", "1"], ["DNA polymerase เริ่มสายใหม่เองไม่ได้ ต้องมีไพรเมอร์ที่ไพรเมสสร้าง", "ถ้าเซลล์ไม่มีไพรเมส จะเกิดอะไรขึ้น", ["สร้างได้เฉพาะสายลีดดิง", "DNA pol III สร้างสายใหม่ไม่ได้เลย", "สร้างได้แต่ช้าลง"], ["ไพรเมสช่วยคลายเกลียวดีเอ็นเอ", "สายลีดดิงไม่ต้องใช้ไพรเมอร์", "DNA polymerase เริ่มสายใหม่เองไม่ได้ ต้องมีปลาย 3′ ให้ต่อ"], "ข", "3"], ["DNA ligase เชื่อมรอยขาดระหว่างชิ้นส่วนโอคาซากิ โดยไม่เติมนิวคลีโอไทด์ใหม่", "หน้าที่ของ DNA ligase คือข้อใด", ["เชื่อมรอยขาดระหว่างชิ้นส่วนโอคาซากิ", "สร้างสายแลกกิงทั้งสาย", "ตัดไพรเมอร์ออก"], ["เติมนิวคลีโอไทด์ลงในช่องว่างระหว่างชิ้น", "สร้างพันธะในโครงน้ำตาล-ฟอสเฟตระหว่างนิวคลีโอไทด์ที่อยู่ติดกัน โดยไม่เติมนิวคลีโอไทด์ใหม่", "รอเชื่อมทีเดียวหลังสร้างครบทุกชิ้น"], "ก", "2"], ["เฮลิเคสสลายพันธะไฮโดรเจนระหว่างเบสคู่สม โดยไม่ตัดโครงสาย", "เฮลิเคส (helicase) สลายพันธะชนิดใด", ["พันธะโคเวเลนต์ในโครงน้ำตาล-ฟอสเฟต", "พันธะไฮโดรเจนระหว่างเบสคู่สม", "พันธะเพปไทด์"], ["ต้องตัดสายให้สั้นลงเพื่อลดแรงบิด", "ต้องตัดสายเพื่อให้ได้ชิ้นส่วนโอคาซากิ", "สองสายต้องแยกจากกัน แต่แต่ละสายต้องยังยาวต่อเนื่องเพื่อใช้เป็นแม่แบบ"], "ข", "3"], ["การจำลองดีเอ็นเอเริ่มที่จุดเริ่มต้นของการจำลอง (origin) และดำเนินไปสองทิศทาง", "การจำลองดีเอ็นเอเริ่มต้นอย่างไร", ["เริ่มที่ origin แล้วไปทั้งสองทิศทาง", "เริ่มที่ปลายโครโมโซมแล้วไล่ไปอีกปลาย", "เริ่มที่ origin แล้วไปทิศเดียว"], ["ที่ origin เกิด bubble ซึ่งมี fork สองด้าน แต่ละด้านมีเฮลิเคส", "DNA polymerase อ่านได้ทิศเดียว", "ปลายโครโมโซมเป็นจุดที่เอนไซม์เข้าจับได้ง่ายที่สุด"], "ก", "1"], ["การจำลองดีเอ็นเอแบบกึ่งอนุรักษ์", "ดีเอ็นเอ 2 โมเลกุลที่ได้จากการจำลองมีลักษณะใด", ["โมเลกุลหนึ่งเป็นสายเดิมทั้งคู่ อีกโมเลกุลเป็นสายใหม่ทั้งคู่", "ทุกสายมีชิ้นเก่าและชิ้นใหม่ปนกัน", "แต่ละโมเลกุลมีสายเดิม 1 สาย และสายใหม่ 1 สาย"], ["สายใหม่จับคู่อยู่กับสายเดิมที่เป็นแม่แบบของมัน", "สายเดิมสองสายกลับมาจับกันใหม่หลังสร้างเสร็จ", "เอนไซม์ตัดสลับชิ้นระหว่างสายเก่ากับสายใหม่"], "ค", "1"], ["DNA polymerase I นำไพรเมอร์ RNA ออกและแทนที่ด้วย DNA", "ไพรเมอร์ RNA ในสายแลกกิง สุดท้ายแล้วเป็นอย่างไร", ["ligase เชื่อมไว้เป็นส่วนหนึ่งของสาย", "DNA pol I นำ RNA ออกแล้วแทนด้วย DNA", "ถูกทิ้งไว้เพราะไม่มีผล"], ["RNA กับ DNA ต่างกันแค่เบส จึงอยู่ในสายเดียวกันได้", "ligase เชื่อม RNA กับ DNA ได้", "ดีเอ็นเอที่ได้ต้องเป็น DNA ทั้งสาย จึงแทนด้วย DNA โดยต่อที่ปลาย 3′ ของชิ้นข้างเคียง"], "ข", "3"], ["โทโพไอโซเมอเรสลดแรงบิดของดีเอ็นเอด้านหน้า replication fork", "โทโพไอโซเมอเรส (topoisomerase) ทำงานที่ตำแหน่งใด", ["ด้านหลัง fork เพื่อเชื่อมชิ้นส่วนโอคาซากิ", "ด้านหน้า fork เพื่อลดแรงบิดของดีเอ็นเอ", "ที่ fork เพื่อแยกสายดีเอ็นเอ"], ["ทำหน้าที่เดียวกับเฮลิเคส จึงอยู่ที่ fork เดียวกัน", "ชิ้นส่วนโอคาซากิต้องถูกหมุนให้ตรงก่อนเชื่อม", "เมื่อเฮลิเคสคลายเกลียว ดีเอ็นเอด้านหน้าจะบิดแน่นขึ้น จึงต้องตัด หมุน แล้วเชื่อมกลับ"], "ข", "3"], ["SSB ป้องกันไม่ให้ดีเอ็นเอสายเดี่ยวกลับมาจับคู่กัน", "ถ้าไม่มี SSB ดีเอ็นเอสายเดี่ยวที่เฮลิเคสเพิ่งแยกออกจะเป็นอย่างไร", ["กลับมาจับคู่กันใหม่", "ถูกย่อยสลายทันที", "ไม่มีผล เพราะ DNA pol สร้างสายใหม่ทันที"], ["SSB เป็นเอนไซม์ที่สร้างไพรเมอร์", "เบสบนสายเดี่ยวยังจับคู่กันได้ SSB จึงเกาะไว้ไม่ให้กลับมาจับคู่กันจนกว่าจะใช้เป็นแม่แบบ", "SSB ทำหน้าที่ตัดสายเพื่อลดแรงบิด"], "ก", "2"]], "B": [["RNA เป็นคู่สมกับสายแม่แบบ และใช้ U แทน T", "สายแม่แบบ 3′-TAC GGA-5′ ถูกถอดรหัสได้ RNA ข้อใด", ["5′-AUG CCU-3′", "3′-UAC GGA-5′", "5′-ATG CCT-3′"], ["RNA มีลำดับเหมือนสายแม่แบบ เพียงเปลี่ยน T เป็น U", "RNA เป็นคู่สมกับสายแม่แบบ และใช้ U จับคู่กับ A", "RNA เป็นคู่สมกับสายแม่แบบ และใช้ T จับคู่กับ A เหมือน DNA"], "ก", "2"], ["RNA polymerase เริ่มสร้างสายใหม่ได้เองโดยไม่ต้องใช้ไพรเมอร์", "ข้อใดถูกต้องเกี่ยวกับการเริ่มสร้างสาย RNA", ["ต้องมีไพรเมอร์ RNA ก่อน", "ต้องมีไพรเมอร์ DNA ก่อน", "เริ่มสายใหม่ได้เองโดยไม่ต้องมีไพรเมอร์"], ["RNA polymerase ต้องมีปลาย 3′ ให้ต่อเหมือน DNA polymerase", "ไพรเมสสร้างไพรเมอร์ให้ทุกครั้ง", "RNA polymerase เริ่มสายเองได้เมื่อจับที่โปรโมเตอร์โดยมี transcription factors ช่วย"], "ค", "3"], ["ตำแหน่งเริ่มถอดรหัส (start point) อยู่ทาง downstream ของกล่อง TATA", "ในยูแคริโอต RNA polymerase II เริ่มถอดรหัสที่ตำแหน่งใด", ["โคดอน AUG บนดีเอ็นเอ", "จุดเริ่มต้น (start point) ทาง downstream ของกล่อง TATA", "กล่อง TATA"], ["transcription factors จับกล่อง TATA แล้ว RNA pol II จึงเลื่อนไปเริ่มที่จุดเริ่มต้น", "AUG เป็นรหัสเริ่มต้นของทั้งการถอดรหัสและการแปลรหัส", "กล่อง TATA ถูกถอดรหัสเป็นส่วนแรกของ RNA"], "ข", "1"], ["การสิ้นสุดการถอดรหัสในยูแคริโอต (ตัดสาย RNA หลังสัญญาณ AAUAAA) แตกต่างจากการหยุดแปลรหัสที่โคดอนหยุด", "ในยูแคริโอต อะไรทำให้ pre-mRNA หลุดออกจาก RNA polymerase", ["โคดอนหยุด UAA", "โปรตีนตัดสาย RNA หลังสัญญาณ AAUAAA", "RNA polymerase หลุดเมื่อถึงปลายโครโมโซม"], ["โคดอนหยุดใช้ได้ทั้งการถอดรหัสและการแปลรหัส", "ทุกยีนถูกถอดรหัสยาวไปจนถึงปลายโครโมโซม", "โคดอนหยุดใช้หยุดการแปลรหัส ส่วนการถอดรหัสใช้สัญญาณ AAUAAA"], "ข", "3"], ["อินทรอนถูกตัดออกจาก pre-mRNA ไม่ได้ตัดออกจากดีเอ็นเอ", "อินทรอน (intron) ถูกตัดออกจากโมเลกุลใด", ["ดีเอ็นเอ", "pre-mRNA", "โปรตีน"], ["ยีนบนดีเอ็นเอยังมีอินทรอนเหมือนเดิม สไปซ์โซมตัดอินทรอนออกจาก RNA", "อินทรอนต้องถูกตัดออกจากดีเอ็นเอก่อนจึงจะถอดรหัสได้", "ไรโบโซมตัดส่วนที่ไม่ต้องการออกหลังแปลรหัส"], "ข", "1"], ["โคดอนอยู่บน mRNA ส่วนแอนติโคดอนอยู่บน tRNA", "โคดอน (codon) อยู่บนโมเลกุลใด", ["mRNA", "tRNA", "rRNA"], ["tRNA นำโคดอนมาวางบนไรโบโซม", "โคดอนคือเบส 3 ตัวบน mRNA ส่วนแอนติโคดอนบน tRNA เข้าคู่กับโคดอน", "โคดอนอยู่บนไรโบโซมเพื่อใช้เลือก tRNA"], "ก", "2"], ["เอนไซม์อะมิโนแอซิล-tRNA ซินทีเทสจับคู่กรดแอมิโนกับ tRNA ที่ถูกต้อง", "อะไรทำให้ tRNA แต่ละตัวมีกรดอะมิโนที่ถูกต้อง", ["tRNA เลือกกรดอะมิโนเอง", "ไรโบโซม", "อะมิโนแอซิล-tRNA ซินทีเทส"], ["แอนติโคดอนจับกับกรดอะมิโนโดยตรง", "เอนไซม์จำเพาะจับคู่กรดอะมิโนกับ tRNA ที่ถูกต้อง", "ไรโบโซมเติมกรดอะมิโนให้ tRNA ที่ A site"], "ค", "2"], ["การแปลรหัสเริ่มที่โคดอนเริ่มต้น AUG ซึ่งกำหนดกรอบการอ่าน", "mRNA 5′-GCAUGUUUGGCUAA-3′ ไรโบโซมเริ่มแปลรหัสที่ใด", ["G ตัวแรกที่ปลาย 5′", "AUG", "ตรงไหนก็ได้ที่ไรโบโซมจับ"], ["อ่านทีละ 3 เบสตั้งแต่เบสแรก", "เริ่มตรงที่ tRNA ตัวแรกบังเอิญพบ", "หน่วยย่อยเล็กเลื่อนหา AUG ซึ่งกำหนดกรอบการอ่าน"], "ข", "3"], ["ที่โคดอนหยุดไม่มี tRNA เข้าคู่ release factor เข้าจับและปล่อยสายพอลิเพปไทด์", "เมื่อโคดอนหยุดเข้าสู่ A site จะเกิดอะไรขึ้น", ["tRNA นำกรดอะมิโน “หยุด” มาต่อ", "release factor เข้าจับ แล้วปล่อยสายพอลิเพปไทด์", "ไรโบโซมข้ามไปอ่านโคดอนถัดไป"], ["ไม่มี tRNA ใดมีแอนติโคดอนเข้าคู่กับโคดอนหยุด", "มีกรดอะมิโนพิเศษที่ใช้ปิดปลายสาย", "โคดอนหยุดไม่มีความหมาย ไรโบโซมจึงข้ามไป"], "ข", "1"], ["rRNA ในหน่วยย่อยใหญ่ของไรโบโซมเร่งการสร้างพันธะเพปไทด์ (ไรโบไซม์)", "ส่วนใดเร่งการสร้างพันธะเพปไทด์ในไรโบโซม", ["rRNA ของหน่วยย่อยใหญ่", "tRNA", "โปรตีนในไรโบโซม"], ["ไรโบโซมสร้างกรดอะมิโนขึ้นใหม่แล้วเชื่อมเข้าสาย", "เอนไซม์ทุกชนิดเป็นโปรตีน", "ไรโบโซมเป็น ribozyme ที่เชื่อมกรดอะมิโนที่ tRNA นำมา"], "ก", "3"]]};
+const SV = [["ด้านเนื้อหา", ["เนื้อหาในแอปถูกต้องและน่าเชื่อถือ", "คำอธิบายในแต่ละขั้นชัดเจนและอ่านเข้าใจง่าย", "แอปให้ความรู้เพิ่มเติมนอกเหนือจากที่เรียนในห้องเรียน", "เนื้อหาที่ลึกกว่าในห้องเรียนท้าทาย แต่ทำความเข้าใจได้ด้วยคำอธิบายและภาพในแอป"]], ["ด้านการออกแบบและการใช้งาน", ["แบบจำลอง 3 มิติช่วยให้มองเห็นโครงสร้างและการทำงานของโมเลกุลได้ชัดเจน", "สี ภาพ และตัวอักษรสวยงาม อ่านง่าย", "ใช้งานง่าย ปุ่มและเมนูไม่สับสน", "แอปทำงานบน iPad ได้ลื่นไหล ไม่ค้าง"]], ["ด้านความเข้าใจเมื่อเทียบกับการเรียนจาก PowerPoint (ข้อความนำ: “เมื่อเทียบกับการเรียนจาก PowerPoint ในห้องเรียน แอปนี้…”)", ["ช่วยให้มองเห็นภาพกระบวนการที่เกิดขึ้นในเซลล์ได้ชัดเจนกว่า", "ช่วยให้เข้าใจลำดับขั้นตอนและหน้าที่ของเอนไซม์แต่ละชนิดได้ดีกว่า", "ช่วยให้เข้าใจส่วนที่ยังสงสัยหรือไม่เข้าใจจากในห้องเรียน", "ทำให้ได้ลงมือทำและมีส่วนร่วมในการเรียนรู้มากกว่า", "ทำให้เรียนรู้ตามจังหวะของตนเองได้ เช่น ดูซ้ำ หยุด หรือข้ามได้", "โดยรวมช่วยให้เข้าใจเนื้อหามากกว่าการเรียนจาก PowerPoint เพียงอย่างเดียว"]], ["ภาพรวม", ["โดยรวมพึงพอใจต่อแอปนี้"]], ["คำถามเลือกตอบ (ไม่นำไปคิดค่าเฉลี่ย)", ["ถ้าต้องเรียนเรื่องนี้ใหม่ อยากเรียนแบบใด (PowerPoint อย่างเดียว / แอปอย่างเดียว / PowerPoint ร่วมกับแอป)"]], ["คำถามปลายเปิด", ["ส่วนไหนที่เข้าใจขึ้นหลังจากใช้แอป ซึ่งตอนเรียนจาก PowerPoint ยังไม่เข้าใจ", "สิ่งที่ควรปรับปรุง"]]];
+const KEY = 'ioc-genetics3d-v1';
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const KK = ['ก', 'ข', 'ค'];
+
+// flatten all 38 items: id, part, number within part, content
+const ITEMS = [];
+['A', 'B'].forEach((p, pi) => DATA[p].forEach((it, i) => ITEMS.push({ id:`${p}${i + 1}`, part:pi + 1, n:i + 1, kind:'test', it })));
+let sn = 0; SV.forEach((d, di) => d[1].forEach(t => { sn++; ITEMS.push({ id:`S${sn}`, part:3, n:sn, kind:'sv', dim:di, t }); }));
+const PARTS = [
+  ['ตอนที่ 1 แบบวัดมโนทัศน์ ชุด A การจำลองดีเอ็นเอ (DNA Replication)', 'แบบวัดสามลำดับขั้น: นักเรียนเลือก (1) คำตอบ ก ข ค (2) เหตุผล 1) 2) 3) และ (3) ความมั่นใจ 0–5 แปลผลด้วยดัชนีความมั่นใจ (CRI) ใช้วัดหลังเรียนจากสไลด์ และหลังใช้แอป Genetics 3D'],
+  ['ตอนที่ 2 แบบวัดมโนทัศน์ ชุด B การแสดงออกของยีน (Gene Expression)', 'แบบวัดสามลำดับขั้นรูปแบบเดียวกับชุด A'],
+  ['ตอนที่ 3 แบบประเมินความพึงพอใจของนักเรียนต่อนวัตกรรม Genetics 3D', 'ข้อ 1–15 มาตราส่วนประมาณค่า 5 ระดับ (5 มากที่สุด – 1 น้อยที่สุด) แปลผลค่าเฉลี่ย 4.51–5.00 มากที่สุด, 3.51–4.50 มาก, 2.51–3.50 ปานกลาง, 1.51–2.50 น้อย, 1.00–1.50 น้อยที่สุด · ข้อ 16 เลือกตอบ · ข้อ 17–18 ปลายเปิด · นักเรียนตอบในแอปโดยไม่ระบุชื่อ']
+];
+const dimLabel = di => di < 4 ? `ด้านที่ ${di + 1} ${SV[di][0].replace(/^ด้าน/, '')}` : SV[di][0];
+
+let S = { info:{}, r:{}, s:{}, sugg:'', sig:'' };
+try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); if(v) S = Object.assign(S, v); } catch(e){}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+
+function qHTML(x){
+  if(x.kind === 'sv') return `<p><span class="no">${x.n}.</span>${esc(x.t)}</p>`;
+  const [concept, stem, opts, reasons, key, rk] = x.it;
+  return `<p><span class="no">${x.n}.</span>${esc(stem)}</p><ol type="none" style="padding-left:18px">${opts.map((o, j) => `<li>${KK[j]}. ${esc(o)}</li>`).join('')}</ol>
+    <div class="lab">เหตุผล</div><ol style="padding-left:22px">${reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ol>
+    <div class="key">ความมั่นใจ 0 1 2 3 4 5 · เฉลย: คำตอบ ${key} เหตุผล ${rk}</div>`;
+}
+function render(){
+  let h = '', part = 0, dim = -1;
+  ITEMS.forEach(x => {
+    if(x.part !== part){ part = x.part; h += `<h2 class="sec-h">${PARTS[part - 1][0]}</h2><p class="sec-p">${PARTS[part - 1][1]}</p>`; }
+    if(x.kind === 'sv' && x.dim !== dim){ dim = x.dim; h += `<div class="dim">${esc(dimLabel(dim))}</div>`; }
+    const v = S.r[x.id];
+    h += `<div class="item${v != null ? ' done' : ''}" data-id="${x.id}">
+      ${x.kind === 'test' ? `<div class="concept">มโนทัศน์ที่ต้องการวัด: ${esc(x.it[0])}</div>` : ''}
+      <div class="q">${qHTML(x)}</div>
+      <div class="rate" role="group" aria-label="คะแนนข้อ ${x.id}">${[1, 0, -1].map(k => `<button type="button" data-v="${k}" class="${v === k ? 'on' : ''}" aria-pressed="${v === k}">${k === 1 ? '+1' : k === 0 ? '0' : '−1'}</button>`).join('')}</div>
+      <textarea id="s-${x.id}" placeholder="ข้อเสนอแนะ (ไม่บังคับ)" aria-label="ข้อเสนอแนะข้อ ${x.id}">${esc(S.s[x.id] || '')}</textarea>
+    </div>`;
+  });
+  $('items').innerHTML = h;
+  meter();
+}
+function meter(){
+  const n = ITEMS.filter(x => S.r[x.id] != null).length;
+  $('mt').textContent = `ประเมินแล้ว ${n} / ${ITEMS.length} ข้อ`;
+  $('mi').style.width = (100*n/ITEMS.length) + '%';
+}
+$('items').addEventListener('click', e => {
+  const b = e.target.closest('.rate button'); if(!b) return;
+  const card = b.closest('.item'), id = card.dataset.id, v = +b.dataset.v;
+  S.r[id] = v; save();
+  card.querySelectorAll('.rate button').forEach(x => { const on = +x.dataset.v === v; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+  card.classList.add('done'); card.classList.remove('miss'); meter(); $('msg').textContent = '';
+});
+$('items').addEventListener('input', e => { if(e.target.id.startsWith('s-')){ S.s[e.target.id.slice(2)] = e.target.value; save(); } });
+
+// expert info
+const INFO = ['fName', 'fPos', 'fEdu', 'fWork', 'fDate', 'fSugg'];
+function today(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+INFO.forEach(id => {
+  $(id).value = id === 'fSugg' ? (S.sugg || '') : (S.info[id] || (id === 'fDate' ? today() : ''));
+  $(id).addEventListener('input', () => { if(id === 'fSugg') S.sugg = $(id).value; else S.info[id] = $(id).value; save(); });
+});
+const TH_M = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+function thDate(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? `${+m[3]} ${TH_M[+m[2] - 1]} พ.ศ. ${+m[1] + 543}` : '........ เดือน .................... พ.ศ. ........'; }
+
+// signature: draw or upload
+const pad = $('pad'), ctx = pad.getContext('2d'); let drawn = false, last = null;
+function sizePad(){ const r = pad.getBoundingClientRect(), k = window.devicePixelRatio || 1; pad.width = Math.round(r.width*k); pad.height = Math.round(r.height*k); ctx.setTransform(k, 0, 0, k, 0, 0); ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#13235e'; drawn = false; }
+const pt = e => { const r = pad.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+pad.addEventListener('pointerdown', e => { pad.setPointerCapture(e.pointerId); last = pt(e); drawn = true; e.preventDefault(); });
+pad.addEventListener('pointermove', e => { if(!last) return; const p = pt(e); ctx.beginPath(); ctx.moveTo(...last); ctx.lineTo(...p); ctx.stroke(); last = p; e.preventDefault(); });
+const up = () => { last = null; }; pad.addEventListener('pointerup', up); pad.addEventListener('pointercancel', up);
+$('padClear').onclick = () => { ctx.clearRect(0, 0, pad.width, pad.height); drawn = false; };
+$('padUse').onclick = () => { if(!drawn){ $('msg').textContent = 'ยังไม่ได้เซ็นในกรอบ'; return; } setSig(pad.toDataURL('image/png')); $('msg').textContent = ''; };
+$('sigFile').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => { // shrink large scans so the saved draft stays small
+    const k = Math.min(1, 900/img.width), c = document.createElement('canvas'); c.width = img.width*k; c.height = img.height*k;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+    setSig(c.toDataURL('image/jpeg', .9)); URL.revokeObjectURL(url); e.target.value = '';
+  };
+  img.src = url;
+};
+$('sigDel').onclick = () => setSig('');
+
+function sigMode(m){
+  S.sigMode = m; save();
+  $('sigMode').querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', b.dataset.m === m));
+  $('sigDraw').hidden = m !== 'draw'; $('sigUp').hidden = m !== 'upload';
+  if(m === 'draw') requestAnimationFrame(sizePad);
+}
+$('sigMode').addEventListener('click', e => { const b = e.target.closest('button'); if(b){ if(S.sig && S.sigMode && S.sigMode !== b.dataset.m) setSig(''); sigMode(b.dataset.m); } });
+function setSig(d){ S.sig = d; save(); $('sigPrev').innerHTML = d ? `<img src="${d}" alt="ลายเซ็น">` : 'ยังไม่มีลายเซ็น'; }
+
+// printed A4 form
+function buildPrint(D){
+  D = D || S; const I = D.info, mark = (id, k) => D.r[id] === k ? '✓' : '';
+  let h = `<h1>แบบประเมินความสอดคล้อง (IOC) ของเครื่องมือที่ใช้ในการเก็บรวบรวมข้อมูล</h1>
+    <p class="c">นวัตกรรม Genetics 3D: แบบจำลองสามมิติ เรื่อง การจำลองดีเอ็นเอและการแสดงออกของยีน</p>
+    <p class="c">รายวิชาชีววิทยา ชั้นมัธยมศึกษาปีที่ 4 โรงเรียนคลองหาดพิทยาคม</p>
+    <div class="info"><b>ชื่อ–สกุลผู้เชี่ยวชาญ</b><span>${esc(I.fName)}</span><b>ตำแหน่ง / วิทยฐานะ</b><span>${esc(I.fPos)}</span><b>วุฒิการศึกษา / สาขาวิชา</b><span>${esc(I.fEdu)}</span><b>สถานที่ทำงาน</b><span>${esc(I.fWork)}</span></div>
+    <p><b>คำชี้แจง</b> ทำเครื่องหมาย ✓ ในช่องคะแนน: +1 แน่ใจว่าข้อคำถามสอดคล้องกับสิ่งที่ต้องการวัด, 0 ไม่แน่ใจ, −1 แน่ใจว่าไม่สอดคล้อง ข้อที่มีค่า IOC ตั้งแต่ 0.50 ขึ้นไปถือว่าใช้ได้</p>`;
+  [1, 2].forEach(p => {
+    h += `<h2>${PARTS[p - 1][0]}</h2><p>${PARTS[p - 1][1]}</p><table><thead><tr><th class="n">ข้อ</th><th>มโนทัศน์ที่ต้องการวัด</th><th>ข้อคำถาม</th><th class="n">+1</th><th class="n">0</th><th class="n">−1</th><th>ข้อเสนอแนะ</th></tr></thead><tbody>`;
+    ITEMS.filter(x => x.part === p).forEach(x => {
+      const [concept, stem, opts, reasons, key, rk] = x.it;
+      h += `<tr><td class="n">${x.n}</td><td class="cc">${esc(concept)}</td><td>${esc(stem)}<br>${opts.map((o, j) => `${KK[j]}. ${esc(o)}`).join('<br>')}<br><b>เหตุผล</b><ol>${reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ol><span class="k">เฉลย: คำตอบ ${key} · เหตุผล ${rk}</span></td><td class="r">${mark(x.id, 1)}</td><td class="r">${mark(x.id, 0)}</td><td class="r">${mark(x.id, -1)}</td><td class="sg">${esc(D.s[x.id] || '')}</td></tr>`;
+    });
+    h += '</tbody></table>';
+  });
+  h += `<h2>${PARTS[2][0]}</h2><p>${PARTS[2][1]}</p><table><thead><tr><th class="n">ข้อ</th><th>ข้อคำถาม</th><th class="n">+1</th><th class="n">0</th><th class="n">−1</th><th>ข้อเสนอแนะ</th></tr></thead><tbody>`;
+  let dim = -1;
+  ITEMS.filter(x => x.part === 3).forEach(x => {
+    if(x.dim !== dim){ dim = x.dim; h += `<tr class="dim"><td colspan="6">${esc(dimLabel(dim))}</td></tr>`; }
+    h += `<tr><td class="n">${x.n}</td><td>${esc(x.t)}</td><td class="r">${mark(x.id, 1)}</td><td class="r">${mark(x.id, 0)}</td><td class="r">${mark(x.id, -1)}</td><td class="sg">${esc(D.s[x.id] || '')}</td></tr>`;
+  });
+  h += `</tbody></table><h2>ข้อเสนอแนะเพิ่มเติม</h2><div class="sugg">${esc(D.sugg || '')}</div>
+    <div class="sigb"><div class="img">${D.sig ? `<img src="${D.sig}" alt="">` : ''}</div>
+    <p>ลงชื่อ ${D.sig ? '' : '..............................................'} ผู้เชี่ยวชาญ</p>
+    <p>(${esc(I.fName) || '..............................................'})</p>
+    <p>${esc(I.fPos) || 'ตำแหน่ง ..............................................'}</p>
+    <p>วันที่ ${thDate(D === S ? ($('fDate').value || I.fDate) : I.fDate)}</p></div>`;
+  $('print').innerHTML = h;
+}
+addEventListener('beforeprint', () => { if(!PRINTING) buildPrint(); });
+let PRINTING = false;
+
+// check, then print
+function ask(title, body){ return new Promise(res => { $('mTitle').textContent = title; $('mBody').innerHTML = body; $('modal').hidden = false; $('mYes').onclick = () => { $('modal').hidden = true; res(true); }; $('mNo').onclick = () => { $('modal').hidden = true; res(false); }; $('mYes').focus(); }); }
+async function check(){
+  const miss = ITEMS.filter(x => S.r[x.id] == null);
+  document.querySelectorAll('.item').forEach(c => c.classList.toggle('miss', S.r[c.dataset.id] == null));
+  if(!(S.info.fName || '').trim()){ $('msg').textContent = 'กรอกชื่อ–สกุลผู้เชี่ยวชาญก่อน'; $('fName').focus(); $('fName').scrollIntoView({ block:'center' }); return false; }
+  if(miss.length){
+    $('msg').textContent = `ยังไม่ได้ประเมิน ${miss.length} ข้อ (ขอบแดง)`;
+    document.querySelector(`.item[data-id="${miss[0].id}"]`).scrollIntoView({ behavior:'smooth', block:'center' }); return false;
+  }
+  $('msg').textContent = '';
+  return true;
+}
+if($('send')) $('send').onclick = async () => {
+  if(!(await check())) return;
+  if(!S.sig && !(await ask('ยังไม่มีลายเซ็น', 'ส่งคำตอบโดยยังไม่มีลายเซ็นไหม (ส่งใหม่ภายหลังได้ คำตอบเดิมจะถูกแทนที่)'))) return;
+  await sendCloud();
+};
+$('go').onclick = async () => {
+  if(!(await check())) return;
+  if(!S.sig && !(await ask('ยังไม่มีลายเซ็น', 'จะพิมพ์แบบไม่มีลายเซ็น แล้วไปเซ็นบนกระดาษทีหลังไหม'))) return;
+  buildPrint(); window.print();
+};
+$('reset').onclick = async () => {
+  if(!(await ask('ล้างคำตอบทั้งหมด?', 'คะแนน ข้อเสนอแนะ และลายเซ็นในเครื่องนี้จะถูกลบ ข้อมูลผู้เชี่ยวชาญยังอยู่'))) return;
+  S.r = {}; S.s = {}; S.sugg = ''; $('fSugg').value = ''; setSig(''); save(); render();
+};
+
+/* ---------- Firebase: every expert's answer is also kept in one place for the teacher ---------- */
+const FB_CFG = { apiKey:"AIzaSyA37xwuWY9E6Axa2EQCG7jDo7Ost9WWiuQ", authDomain:"dnangene.firebaseapp.com", projectId:"dnangene", storageBucket:"dnangene.firebasestorage.app", messagingSenderId:"295300009511", appId:"1:295300009511:web:b25e216c87cd6ff531c802" };
+const FB_BASE = 'https://www.gstatic.com/firebasejs/10.12.2/', TEACHER_EMAIL = 'natjarinc@gmail.com';
+let fa, ff, auth, db;
+const fbReady = Promise.resolve(false); (async () => { return;
+  try {
+    const [am, au, fs] = await Promise.all([import(FB_BASE + 'firebase-app.js'), import(FB_BASE + 'firebase-auth.js'), import(FB_BASE + 'firebase-firestore.js')]);
+    fa = au; ff = fs; const app = am.initializeApp(FB_CFG); auth = au.getAuth(app); db = fs.getFirestore(app);
+    await new Promise(r => { const un = au.onAuthStateChanged(auth, () => { un(); r(); }); });
+    if(!auth.currentUser) await au.signInAnonymously(auth);
+    return true;
+  } catch(e){ console.warn('Firebase unavailable', e); return false; }
+})();
+function myId(){
+  let id = null; try { id = localStorage.getItem(KEY + '-id'); } catch(e){}
+  if(!id){ id = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, '0')).join(''); try { localStorage.setItem(KEY + '-id', id); } catch(e){} }
+  return id;
+}
+async function sendCloud(){
+  $('cloud').textContent = 'กำลังส่ง…';
+  try {
+    if(!(await fbReady)) throw new Error('offline');
+    const I = S.info;
+    await ff.setDoc(ff.doc(db, 'ioc', myId()), { v:1, name:I.fName || '', pos:I.fPos || '', edu:I.fEdu || '', work:I.fWork || '', date:$('fDate').value || '', r:S.r, s:S.s, sugg:S.sugg || '', sig:S.sig || '', n:Object.keys(S.r).length, at:Date.now() });
+    const t = new Date(); $('cloud').textContent = `ส่งให้ครูแล้ว ✓ ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+    return true;
+  } catch(e){ $('cloud').textContent = ''; $('msg').textContent = 'ส่งให้ครูไม่สำเร็จ ตรวจอินเทอร์เน็ตแล้วกดส่งอีกครั้ง'; return false; }
+}
+
+/* ---------- teacher view: all experts, IOC per item, print any expert's form again ---------- */
+const TV = { rows:[], use:{} };
+const fromDoc = d => ({ info:{ fName:d.name, fPos:d.pos, fEdu:d.edu, fWork:d.work, fDate:d.date }, r:d.r || {}, s:d.s || {}, sugg:d.sugg || '', sig:d.sig || '' });
+function showTeacher(on){
+  document.body.classList.toggle('teacher', on); $('app').hidden = on; $('tv').hidden = !on;
+  try { history.replaceState(null, '', on ? '#teacher' : location.pathname); } catch(e){}
+  if(on) fbReady.then(() => { if(auth && auth.currentUser && !auth.currentUser.isAnonymous) tvLoad(); });
+  scrollTo(0, 0);
+}
+
+$('tvBack').onclick = () => showTeacher(false);
+$('tvGo').onclick = async () => {
+  $('tvErr').textContent = '';
+  try { if(!(await fbReady)) throw new Error('offline'); await fa.signInWithEmailAndPassword(auth, TEACHER_EMAIL, $('tvPw').value); $('tvPw').value = ''; tvLoad(); }
+  catch(e){ $('tvErr').textContent = /offline/.test(e.message) ? 'เชื่อมต่อ Firebase ไม่ได้ ตรวจอินเทอร์เน็ต' : 'รหัสผ่านไม่ถูกต้อง'; }
+};
+$('tvPw').addEventListener('keydown', e => { if(e.key === 'Enter') $('tvGo').click(); });
+async function tvLoad(){
+  $('tvLogin').hidden = true; $('tvBody').innerHTML = '<p class="note">กำลังโหลด…</p>';
+  try {
+    const q = await ff.getDocs(ff.collection(db, 'ioc'));
+    TV.rows = q.docs.map(d => Object.assign({ id:d.id }, d.data())).sort((a, b) => (a.at || 0) - (b.at || 0));
+    TV.rows.forEach(r => { if(!(r.id in TV.use)) TV.use[r.id] = true; });
+    tvRender();
+  } catch(e){ $('tvBody').innerHTML = '<p class="msg">โหลดไม่สำเร็จ ตรวจอินเทอร์เน็ต แล้วลองใหม่</p>'; }
+}
+function iocOf(rows){
+  return ITEMS.map(x => { const v = rows.map(r => (r.r || {})[x.id]); const ok = v.filter(y => y === 1 || y === 0 || y === -1); const sum = ok.reduce((a, b) => a + b, 0); return { x, v, sum, ioc:ok.length ? sum/rows.length : null }; });
+}
+const f2 = v => v == null ? '–' : v.toFixed(2);
+const sgn = v => v == null ? '–' : v === 1 ? '+1' : v === -1 ? '−1' : '0';
+const fmtT = t => { if(!t) return '–'; const d = new Date(t); return `${d.getDate()} ${TH_M[d.getMonth()].slice(0, 3)}. ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+function tvRender(){
+  const all = TV.rows, rows = all.filter(r => TV.use[r.id]);
+  if(!all.length){ $('tvBody').innerHTML = '<section class="panel"><p class="note" style="margin:0">ยังไม่มีผู้เชี่ยวชาญกดส่ง</p></section>'; return; }
+  const R = iocOf(rows), pass = R.filter(z => z.ioc != null && z.ioc >= 0.5).length;
+  const part = p => R.filter(z => z.x.part === p && z.ioc != null).map(z => z.ioc);
+  const rng = xs => xs.length ? `${f2(Math.min(...xs))}–${f2(Math.max(...xs))}` : '–';
+  let h = `<div class="kp"><div><b>${rows.length}</b><span>ผู้เชี่ยวชาญที่นำมาคิด (N)</span></div><div><b>${pass}/${ITEMS.length}</b><span>ข้อที่ผ่าน (IOC ≥ 0.50)</span></div><div><b>${rng(part(1))}</b><span>ชุด A</span></div><div><b>${rng(part(2))}</b><span>ชุด B</span></div><div><b>${rng(part(3))}</b><span>แบบประเมินความพึงพอใจ</span></div></div>
+  <section class="panel"><h2>ผู้เชี่ยวชาญที่ส่งแล้ว</h2><div class="scroll"><table class="tvt"><thead><tr><th class="c">นำมาคิด</th><th>ท่าน</th><th>ชื่อ–สกุล / ตำแหน่ง</th><th class="c">ประเมิน</th><th class="c">ลายเซ็น</th><th class="c">ส่งล่าสุด</th><th></th></tr></thead><tbody>
+  ${all.map((r, i) => `<tr><td class="c"><input type="checkbox" data-use="${r.id}" ${TV.use[r.id] ? 'checked' : ''} aria-label="นำมาคิด"></td><td class="c">${rows.indexOf(r) + 1 || '–'}</td><td>${esc(r.name) || '<span class="note">(ไม่มีชื่อ)</span>'}<br><span class="note">${esc(r.pos)}</span></td><td class="c">${r.n || 0}/38</td><td class="c">${r.sig ? '✓' : '–'}</td><td class="c">${fmtT(r.at)}</td><td class="c"><button class="btn" data-pr="${r.id}">พิมพ์ฉบับนี้</button> <button class="btn ghost" data-del="${r.id}">ลบ</button></td></tr>`).join('')}
+  </tbody></table></div><p class="note" style="margin:8px 0 0">ติ๊ก "นำมาคิด" ออก ถ้าเป็นฉบับทดลองหรือส่งซ้ำ</p></section>
+  <div class="row"><button class="btn primary" id="tvPrint">พิมพ์ตารางสรุป IOC</button><button class="btn" id="tvCsv">ดาวน์โหลด Excel (.csv)</button><button class="btn" id="tvRe">โหลดใหม่</button><button class="btn" id="tvOut">ออกจากระบบครู</button></div>
+  <div class="scroll"><table class="tvt"><thead><tr><th class="c">ข้อ</th>${rows.map((r, i) => `<th class="c" title="${esc(r.name)}">ท่านที่ ${i + 1}</th>`).join('')}<th class="c">ΣR</th><th class="c">IOC</th><th class="c">ผล</th></tr></thead><tbody>`;
+  [1, 2, 3].forEach(p => {
+    h += `<tr class="part"><td colspan="${rows.length + 4}">${['ตอนที่ 1 ชุด A', 'ตอนที่ 2 ชุด B', 'ตอนที่ 3 แบบประเมินความพึงพอใจ'][p - 1]}</td></tr>`;
+    R.filter(z => z.x.part === p).forEach(z => { h += `<tr><td class="c">${z.x.id.replace('S', '')}</td>${z.v.map(v => `<td class="c">${sgn(v)}</td>`).join('')}<td class="c">${z.sum}</td><td class="c">${f2(z.ioc)}</td><td class="c">${z.ioc == null ? '' : z.ioc >= 0.5 ? '<span class="pill pass">ใช้ได้</span>' : '<span class="pill fail">ปรับปรุง</span>'}</td></tr>`; });
+  });
+  h += '</tbody></table></div>';
+  const notes = []; rows.forEach((r, i) => { Object.entries(r.s || {}).forEach(([k, v]) => { if(String(v).trim()) notes.push(`ท่านที่ ${i + 1} ข้อ ${k.replace('S', 'ความพึงพอใจ ')}: ${esc(v)}`); }); if((r.sugg || '').trim()) notes.push(`ท่านที่ ${i + 1} (ภาพรวม): ${esc(r.sugg)}`); });
+  h += `<section class="panel"><h2>ข้อเสนอแนะจากผู้เชี่ยวชาญ</h2>${notes.length ? `<ul style="margin:0;padding-left:20px">${notes.map(n => `<li>${n}</li>`).join('')}</ul>` : '<p class="note" style="margin:0">ไม่มีข้อเสนอแนะ</p>'}</section>`;
+  $('tvBody').innerHTML = h;
+}
+$('tvBody').addEventListener('change', e => { const c = e.target.closest('[data-use]'); if(c){ TV.use[c.dataset.use] = c.checked; tvRender(); } });
+$('tvBody').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.pr){ const r = TV.rows.find(x => x.id === b.dataset.pr); PRINTING = true; buildPrint(fromDoc(r)); window.print(); setTimeout(() => { PRINTING = false; }, 500); }
+  else if(b.dataset.del){
+    const r = TV.rows.find(x => x.id === b.dataset.del);
+    if(!(await ask('ลบคำตอบนี้?', `ลบคำตอบของ ${esc(r.name) || 'ผู้เชี่ยวชาญ'} ออกจาก Firebase กู้คืนไม่ได้`))) return;
+    try { await ff.deleteDoc(ff.doc(db, 'ioc', r.id)); tvLoad(); } catch(err){ $('tvBody').insertAdjacentHTML('afterbegin', '<p class="msg">ลบไม่สำเร็จ</p>'); }
+  }
+  else if(b.id === 'tvPrint'){ PRINTING = true; buildSum(); window.print(); setTimeout(() => { PRINTING = false; }, 500); }
+  else if(b.id === 'tvCsv') tvCsv();
+  else if(b.id === 'tvRe') tvLoad();
+  else if(b.id === 'tvOut'){ await fa.signOut(auth); await fa.signInAnonymously(auth); $('tvLogin').hidden = false; $('tvBody').innerHTML = ''; }
+});
+function buildSum(){
+  const rows = TV.rows.filter(r => TV.use[r.id]), R = iocOf(rows);
+  let h = `<h1>ตารางสรุปผลการประเมินความสอดคล้อง (IOC) โดยผู้เชี่ยวชาญ ${rows.length} ท่าน</h1><p class="c">นวัตกรรม Genetics 3D รายวิชาชีววิทยา ชั้นมัธยมศึกษาปีที่ 4 โรงเรียนคลองหาดพิทยาคม</p>
+    <p style="margin-top:6pt">ผู้เชี่ยวชาญ: ${rows.map((r, i) => `ท่านที่ ${i + 1} ${esc(r.name)}${r.pos ? ` (${esc(r.pos)})` : ''}`).join(' · ')}</p>
+    <p>IOC = ΣR / N เมื่อ ΣR คือผลรวมคะแนนจากผู้เชี่ยวชาญ และ N คือจำนวนผู้เชี่ยวชาญ ข้อที่มีค่า IOC ตั้งแต่ 0.50 ขึ้นไปถือว่าใช้ได้</p>`;
+  [1, 2, 3].forEach(p => {
+    h += `<h2>${PARTS[p - 1][0]}</h2><table class="sumt"><thead><tr><th>ข้อ</th>${rows.map((r, i) => `<th>ท่านที่ ${i + 1}</th>`).join('')}<th>ΣR</th><th>IOC</th><th>ผล</th></tr></thead><tbody>`;
+    R.filter(z => z.x.part === p).forEach(z => { h += `<tr><td>${z.x.n}</td>${z.v.map(v => `<td>${sgn(v)}</td>`).join('')}<td>${z.sum}</td><td>${f2(z.ioc)}</td><td>${z.ioc == null ? '' : z.ioc >= 0.5 ? 'ใช้ได้' : 'ปรับปรุง'}</td></tr>`; });
+    h += '</tbody></table>';
+  });
+  $('print').innerHTML = h;
+}
+function tvCsv(){
+  const rows = TV.rows.filter(r => TV.use[r.id]), R = iocOf(rows);
+  const out = [['ข้อ', ...rows.map((r, i) => `ท่านที่ ${i + 1} ${r.name}`), 'ΣR', 'IOC', 'ผล']];
+  R.forEach(z => out.push([z.x.id, ...z.v.map(v => v == null ? '' : v), z.sum, f2(z.ioc), z.ioc == null ? '' : z.ioc >= 0.5 ? 'ใช้ได้' : 'ปรับปรุง']));
+  const csv = '﻿' + out.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' })); a.download = 'สรุปผล-IOC-Genetics3D.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+
+
+render(); setSig(S.sig || ''); if(S.sigMode) sigMode(S.sigMode); addEventListener('resize', () => { if(!drawn) sizePad(); });
+</script>
+</body>
+</html>
